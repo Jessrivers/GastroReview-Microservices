@@ -1,0 +1,124 @@
+databases:
+  - name: gastroreview-db
+    databaseName: gastroreview
+    user: gastroreview
+    plan: free
+
+services:
+  # Eureka Server (Service Discovery)
+  - type: web
+    name: eureka-server
+    env: docker
+    dockerfilePath: ./eureka-server/Dockerfile
+    dockerContext: ./eureka-server
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8761
+
+  # API Gateway
+  - type: web
+    name: api-gateway
+    env: docker
+    dockerfilePath: ./api-gateway/Dockerfile
+    dockerContext: ./api-gateway
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 9090
+      - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        value: https://eureka-server.onrender.com/eureka/
+
+  # Users Service
+  - type: web
+    name: users-service
+    env: docker
+    dockerfilePath: ./users-service/Dockerfile
+    dockerContext: ./users-service
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gastroreview-db
+          property: connectionString
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: gastroreview-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: gastroreview-db
+          property: password
+      - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        value: https://eureka-server.onrender.com/eureka/
+      - key: JWT_SECRET
+        value: mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong
+
+  # Restaurants Service
+  - type: web
+    name: restaurants-service
+    env: docker
+    dockerfilePath: ./restaurants-service/Dockerfile
+    dockerContext: ./restaurants-service
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8082
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gastroreview-db
+          property: connectionString
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: gastroreview-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: gastroreview-db
+          property: password
+      - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        value: https://eureka-server.onrender.com/eureka/
+      - key: JWT_SECRET
+        value: mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong
+
+  # Reviews Service
+  - type: web
+    name: reviews-service
+    env: docker
+    dockerfilePath: ./reviews-service/Dockerfile
+    dockerContext: ./reviews-service
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8083
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gastroreview-db
+          property: connectionString
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: gastroreview-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: gastroreview-db
+          property: password
+      - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        value: https://eureka-server.onrender.com/eureka/
+      - key: JWT_SECRET
+        value: mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong
+      - key: AZURE_TEXT_ANALYTICS_KEY
+        sync: false
+      - key: AZURE_TEXT_ANALYTICS_ENDPOINT
+        sync: false
+      - key: AZURE_CONTENT_MODERATOR_KEY
+        sync: false
+      - key: AZURE_CONTENT_MODERATOR_ENDPOINT
+        sync: false

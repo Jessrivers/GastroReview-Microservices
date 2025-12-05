@@ -22,5 +22,5 @@ COPY --from=build /app/target/*.jar app.jar
 # Exponer puerto
 EXPOSE 8761
 
-# Ejecutar la aplicación
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Ejecutar la aplicación con soporte para PORT de Render
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8761} -jar app.jar"]

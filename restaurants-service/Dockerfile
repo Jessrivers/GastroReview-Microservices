@@ -23,4 +23,4 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8082
 
 # Ejecutar la aplicación
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8082} -jar app.jar"]
