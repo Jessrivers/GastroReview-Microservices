@@ -1,7 +1,17 @@
 databases:
-  - name: gastroreview-db
-    databaseName: gastroreview
-    user: gastroreview
+  - name: users-db
+    databaseName: users_db
+    user: users_user
+    plan: free
+
+  - name: restaurants-db
+    databaseName: restaurants_db
+    user: restaurants_user
+    plan: free
+
+  - name: reviews-db
+    databaseName: reviews_db
+    user: reviews_user
     plan: free
 
 services:
@@ -44,15 +54,15 @@ services:
         value: 8081
       - key: DATABASE_URL
         fromDatabase:
-          name: gastroreview-db
+          name: users-db
           property: connectionString
       - key: DATABASE_USERNAME
         fromDatabase:
-          name: gastroreview-db
+          name: users-db
           property: user
       - key: DATABASE_PASSWORD
         fromDatabase:
-          name: gastroreview-db
+          name: users-db
           property: password
       - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
         value: https://eureka-server.onrender.com/eureka/
@@ -72,15 +82,15 @@ services:
         value: 8082
       - key: DATABASE_URL
         fromDatabase:
-          name: gastroreview-db
+          name: restaurants-db
           property: connectionString
       - key: DATABASE_USERNAME
         fromDatabase:
-          name: gastroreview-db
+          name: restaurants-db
           property: user
       - key: DATABASE_PASSWORD
         fromDatabase:
-          name: gastroreview-db
+          name: restaurants-db
           property: password
       - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
         value: https://eureka-server.onrender.com/eureka/
@@ -100,15 +110,15 @@ services:
         value: 8083
       - key: DATABASE_URL
         fromDatabase:
-          name: gastroreview-db
+          name: reviews-db
           property: connectionString
       - key: DATABASE_USERNAME
         fromDatabase:
-          name: gastroreview-db
+          name: reviews-db
           property: user
       - key: DATABASE_PASSWORD
         fromDatabase:
-          name: gastroreview-db
+          name: reviews-db
           property: password
       - key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
         value: https://eureka-server.onrender.com/eureka/
