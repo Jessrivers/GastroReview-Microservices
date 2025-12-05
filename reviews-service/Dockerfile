@@ -12,12 +12,16 @@ RUN mvn dependency:go-offline -B
 COPY src/ src/
 RUN mvn clean package spring-boot:repackage -DskipTests -B
 
+# Verificar que el JAR se generó correctamente
+RUN ls -la /app/target/ && \
+    if [ ! -f /app/target/reviews-service-*.jar ]; then echo "ERROR: JAR not found!"; exit 1; fi
+
 # Etapa final
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Copiar el JAR compilado
-COPY --from=build /app/target/*.jar app.jar
+# Copiar el JAR compilado (ignorando el JAR original sin repackage)
+COPY --from=build /app/target/reviews-service-*.jar app.jar
 
 # Exponer puerto
 EXPOSE 8083
