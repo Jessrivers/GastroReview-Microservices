@@ -1,0 +1,137 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: gastroreview-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 2311508855
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    networks:
+      - gastroreview-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Eureka Server - Registro de servicios
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - gastroreview-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8761/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "9090:9090"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - gastroreview-network
+    restart: on-failure
+
+  # Users Service
+  users-service:
+    build:
+      context: ./users-service
+      dockerfile: Dockerfile
+    container_name: users-service
+    ports:
+      - "8081:8081"
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/users_db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: 2311508855
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      JWT_SECRET: mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - gastroreview-network
+    restart: on-failure
+
+  # Restaurants Service
+  restaurants-service:
+    build:
+      context: ./restaurants-service
+      dockerfile: Dockerfile
+    container_name: restaurants-service
+    ports:
+      - "8082:8082"
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/restaurants_db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: 2311508855
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      JWT_SECRET: mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - gastroreview-network
+    restart: on-failure
+
+  # Reviews Service
+  reviews-service:
+    build:
+      context: ./reviews-service
+      dockerfile: Dockerfile
+    container_name: reviews-service
+    ports:
+      - "8083:8083"
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/reviews_db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: 2311508855
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      JWT_SECRET: mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong
+      AZURE_TEXT_ANALYTICS_KEY: ${AZURE_TEXT_ANALYTICS_KEY:-your-key-here}
+      AZURE_TEXT_ANALYTICS_ENDPOINT: ${AZURE_TEXT_ANALYTICS_ENDPOINT:-https://your-resource.cognitiveservices.azure.com/}
+      AZURE_CONTENT_MODERATOR_KEY: ${AZURE_CONTENT_MODERATOR_KEY:-your-key-here}
+      AZURE_CONTENT_MODERATOR_ENDPOINT: ${AZURE_CONTENT_MODERATOR_ENDPOINT:-https://your-resource.cognitiveservices.azure.com/}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - gastroreview-network
+    restart: on-failure
+
+networks:
+  gastroreview-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

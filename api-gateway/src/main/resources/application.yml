@@ -1,0 +1,55 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: users-service
+          uri: lb://users-service
+          predicates:
+            - Path=/api/auth/**, /api/users/**, /api/alerts/**, /api/notifications/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
+
+        - id: restaurants-service
+          uri: lb://restaurants-service
+          predicates:
+            - Path=/api/restaurants/**, /api/dishes/**, /api/categories/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /$\{segment}
+
+        - id: reviews-service
+          uri: lb://reviews-service
+          predicates:
+            - Path=/graphql, /graphiql/**
+          filters:
+            - RewritePath=/graphql, /graphql
+
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
