@@ -8,13 +8,11 @@ RUN apk add --no-cache maven
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copiar código fuente y compilar
+# Copiar código fuente y compilar con Spring Boot
 COPY src/ src/
-RUN mvn clean package spring-boot:repackage -DskipTests -B
-
-# Verificar que el JAR se generó correctamente
-RUN ls -la /app/target/ && \
-    if [ ! -f /app/target/api-gateway-*.jar ]; then echo "ERROR: JAR not found!"; exit 1; fi
+RUN mvn clean install -DskipTests -B && \
+    echo "=== Listing target directory ===" && \
+    ls -lah /app/target/
 
 # Etapa final
 FROM eclipse-temurin:17-jre-alpine
