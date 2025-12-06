@@ -24,5 +24,5 @@ COPY --from=build /app/target/restaurants-service-*.jar app.jar
 # Exponer puerto
 EXPOSE 8082
 
-# Ejecutar la aplicación
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8082} -jar app.jar"]
+# Ejecutar la aplicación con configuración de memoria optimizada para Railway
+ENTRYPOINT ["sh", "-c", "java -Xms128m -Xmx256m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+UseStringDeduplication -Dserver.port=${PORT:-8082} -jar app.jar"]

@@ -24,5 +24,5 @@ COPY --from=build /app/target/api-gateway-*.jar app.jar
 # Exponer puerto
 EXPOSE 9090
 
-# Ejecutar la aplicación
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-9090} -jar app.jar"]
+# Ejecutar la aplicación con configuración de memoria optimizada
+ENTRYPOINT ["sh", "-c", "java -Xms128m -Xmx256m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+UseStringDeduplication -Dserver.port=${PORT:-9090} -jar app.jar"]

@@ -27,5 +27,5 @@ COPY --from=build /app/target/eureka-server-*.jar app.jar
 # Exponer puerto
 EXPOSE 8761
 
-# Ejecutar la aplicación con soporte para PORT de Render
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8761} -jar app.jar"]
+# Ejecutar la aplicación con configuración de memoria optimizada para Railway
+ENTRYPOINT ["sh", "-c", "java -Xms96m -Xmx192m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+UseStringDeduplication -Dserver.port=${PORT:-8761} -jar app.jar"]
